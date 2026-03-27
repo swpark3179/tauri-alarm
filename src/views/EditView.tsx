@@ -28,11 +28,43 @@ interface EditViewProps {
   onCancel: () => void;
 }
 
+const getCurrentDate = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+const getCurrentTime = () => {
+  const d = new Date();
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const dayMap: Record<string, string> = {
+  'Monday': '월요일',
+  'Tuesday': '화요일',
+  'Wednesday': '수요일',
+  'Thursday': '목요일',
+  'Friday': '금요일',
+  'Saturday': '토요일',
+  'Sunday': '일요일'
+};
+
+const weekMap: Record<string, string> = {
+  'First': '첫째 주',
+  'Second': '둘째 주',
+  'Third': '셋째 주',
+  'Fourth': '넷째 주',
+  'Last': '마지막 주'
+};
+
 const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
   const [title, setTitle] = useState(alarm?.title || '');
   const [repeatType, setRepeatType] = useState<RepeatType>(alarm?.repeat_type || 'None');
   const [triggers, setTriggers] = useState<TriggerInfo[]>(
-    alarm?.triggers || [{ date: '', time: '' }]
+    alarm?.triggers || [{ date: getCurrentDate(), time: getCurrentTime() }]
   );
   const [content, setContent] = useState('');
   const [tab, setTab] = useState(0);
@@ -51,7 +83,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
   }, [tab, content]);
 
   const handleAddTrigger = () => {
-    setTriggers([...triggers, { date: '', time: '' }]);
+    setTriggers([...triggers, { date: getCurrentDate(), time: getCurrentTime() }]);
   };
 
   const handleRemoveTrigger = (index: number) => {
@@ -77,7 +109,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                   value={t.date || ''}
                   onChange={(e) => handleTriggerChange(i, 'date', e.target.value)}
                   InputLabelProps={{ shrink: true }}
-                  label="Date"
+                  label="날짜"
                 />
               </Grid>
               <Grid size={5}>
@@ -87,7 +119,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                   value={t.time || ''}
                   onChange={(e) => handleTriggerChange(i, 'time', e.target.value)}
                   InputLabelProps={{ shrink: true }}
-                  label="Time"
+                  label="시간"
                 />
               </Grid>
               <Grid size={2}>
@@ -97,7 +129,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
               </Grid>
             </Grid>
           ))}
-          <Button startIcon={<Add />} onClick={handleAddTrigger} sx={{ mt: 1 }}>Add Date/Time</Button>
+          <Button startIcon={<Add />} onClick={handleAddTrigger} sx={{ mt: 1 }}>날짜/시간 추가</Button>
         </Box>
       );
     }
@@ -110,7 +142,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
           value={triggers[0]?.time || ''}
           onChange={(e) => handleTriggerChange(0, 'time', e.target.value)}
           InputLabelProps={{ shrink: true }}
-          label="Time"
+          label="시간"
           sx={{ mt: 2 }}
         />
       );
@@ -120,15 +152,15 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
       return (
         <Box sx={{ mt: 2 }}>
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Day of Week</InputLabel>
+            <InputLabel>요일</InputLabel>
             <Select
               multiple
               value={triggers[0]?.days_of_week || []}
               onChange={(e) => handleTriggerChange(0, 'days_of_week', e.target.value)}
-              label="Day of Week"
+              label="요일"
             >
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                <MenuItem key={day} value={day}>{day}</MenuItem>
+                <MenuItem key={day} value={day}>{dayMap[day]}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -138,7 +170,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
             value={triggers[0]?.time || ''}
             onChange={(e) => handleTriggerChange(0, 'time', e.target.value)}
             InputLabelProps={{ shrink: true }}
-            label="Time"
+            label="시간"
           />
         </Box>
       );
@@ -150,28 +182,28 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
           <Grid container spacing={2}>
             <Grid size={6}>
               <FormControl fullWidth>
-                <InputLabel>Week of Month</InputLabel>
+                <InputLabel>주차</InputLabel>
                 <Select
                   value={triggers[0]?.weeks_of_month || ''}
                   onChange={(e) => handleTriggerChange(0, 'weeks_of_month', e.target.value)}
-                  label="Week of Month"
+                  label="주차"
                 >
                   {['First', 'Second', 'Third', 'Fourth', 'Last'].map(week => (
-                    <MenuItem key={week} value={week}>{week}</MenuItem>
+                    <MenuItem key={week} value={week}>{weekMap[week]}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={6}>
               <FormControl fullWidth>
-                <InputLabel>Day of Week</InputLabel>
+                <InputLabel>요일</InputLabel>
                 <Select
                   value={triggers[0]?.days_of_week?.[0] || ''}
                   onChange={(e) => handleTriggerChange(0, 'days_of_week', [e.target.value])}
-                  label="Day of Week"
+                  label="요일"
                 >
                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                    <MenuItem key={day} value={day}>{day}</MenuItem>
+                    <MenuItem key={day} value={day}>{dayMap[day]}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -183,7 +215,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                 value={triggers[0]?.time || ''}
                 onChange={(e) => handleTriggerChange(0, 'time', e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                label="Time"
+                label="시간"
               />
             </Grid>
           </Grid>
@@ -207,32 +239,32 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
       <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
-        <Typography variant="h6">{alarm ? 'Edit Alarm' : 'New Alarm'}</Typography>
+        <Typography variant="h6">{alarm ? '알람 편집' : '새 알람'}</Typography>
       </Box>
 
       <Box sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
         <TextField
           fullWidth
-          label="Title"
+          label="제목"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           sx={{ mb: 2 }}
         />
 
         <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Repeat Type</InputLabel>
+          <InputLabel>반복 주기</InputLabel>
           <Select
             value={repeatType}
             onChange={(e) => {
               setRepeatType(e.target.value as RepeatType);
-              setTriggers([{ date: '', time: '', days_of_week: [], weeks_of_month: '' }]);
+              setTriggers([{ date: getCurrentDate(), time: getCurrentTime(), days_of_week: [], weeks_of_month: '' }]);
             }}
-            label="Repeat Type"
+            label="반복 주기"
           >
-            <MenuItem value="None">None</MenuItem>
-            <MenuItem value="Daily">Daily</MenuItem>
-            <MenuItem value="Weekly">Weekly</MenuItem>
-            <MenuItem value="Monthly">Monthly</MenuItem>
+            <MenuItem value="None">반복 안함</MenuItem>
+            <MenuItem value="Daily">매일</MenuItem>
+            <MenuItem value="Weekly">매주</MenuItem>
+            <MenuItem value="Monthly">매월</MenuItem>
           </Select>
         </FormControl>
 
@@ -240,8 +272,8 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
 
         <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
           <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-            <Tab label="Edit" />
-            <Tab label="Preview" />
+            <Tab label="편집" />
+            <Tab label="미리보기" />
           </Tabs>
 
           <Box sx={{ mt: 2, minHeight: 200, display: 'flex', flexDirection: 'column' }}>
@@ -252,7 +284,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                 minRows={8}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Markdown is supported..."
+                placeholder="마크다운을 지원합니다..."
               />
             ) : (
               <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: 1, flex: 1, bgcolor: 'white', overflow: 'auto' }}>
@@ -284,8 +316,8 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
       </Box>
 
       <Box sx={{ p: 2, borderTop: '1px solid #ddd', display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-        <Button onClick={onCancel} variant="outlined">Cancel</Button>
-        <Button onClick={handleSave} variant="contained" disabled={!title}>Save</Button>
+        <Button onClick={onCancel} variant="outlined">취소</Button>
+        <Button onClick={handleSave} variant="contained" disabled={!title}>저장</Button>
       </Box>
     </Box>
   );

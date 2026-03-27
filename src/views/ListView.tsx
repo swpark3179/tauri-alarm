@@ -42,14 +42,14 @@ const ListView: React.FC<ListViewProps> = ({
   return (
     <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'primary.main', color: 'white' }}>
-        <Typography variant="h6">Tauri Alarm Tasks</Typography>
+        <Typography variant="h6">알람 목록</Typography>
         {loading && <CircularProgress size={24} color="inherit" />}
       </Box>
 
       <Box sx={{ flex: 1, overflowY: 'auto', p: 1, bgcolor: 'background.default' }}>
         {alarms.length === 0 && !loading && (
           <Typography align="center" color="text.secondary" sx={{ mt: 4 }}>
-            No alarms registered yet.
+            등록된 알람이 없습니다.
           </Typography>
         )}
         <List>

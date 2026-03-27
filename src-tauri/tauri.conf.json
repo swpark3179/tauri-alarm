@@ -25,11 +25,5 @@
     }
   },
   "plugins": {
-    "fs": {
-      "scope": ["$HOME/.alarm/**"]
-    },
-    "shell": {
-      "open": true
-    }
   }
 }

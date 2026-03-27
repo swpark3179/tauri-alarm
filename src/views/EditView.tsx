@@ -287,7 +287,21 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                 placeholder="마크다운을 지원합니다..."
               />
             ) : (
-              <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: 1, flex: 1, bgcolor: 'white', overflow: 'auto' }}>
+              <Box sx={{
+                p: 2,
+                border: '1px solid #ccc',
+                borderRadius: 1,
+                flex: 1,
+                bgcolor: 'white',
+                overflow: 'auto',
+                '& table': {
+                  borderCollapse: 'collapse',
+                },
+                '& th, & td': {
+                  border: '1px solid #ccc',
+                  padding: '8px',
+                }
+              }}>
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   rehypePlugins={[rehypeRaw]}

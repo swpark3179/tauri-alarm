@@ -23,6 +23,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
+      if (!window.__TAURI_INTERNALS__) return;
       try {
         await invoke("init_fs");
         await invoke("set_window_position", { window: getCurrentWindow() });

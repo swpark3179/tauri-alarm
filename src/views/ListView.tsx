@@ -41,7 +41,7 @@ const ListView: React.FC<ListViewProps> = ({
 }) => {
   return (
     <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Box data-tauri-drag-region sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'primary.main', color: 'white', cursor: 'move', userSelect: 'none' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'primary.main', color: 'white' }}>
         <Typography variant="h6">알람 목록</Typography>
         {loading && <CircularProgress size={24} color="inherit" />}
       </Box>

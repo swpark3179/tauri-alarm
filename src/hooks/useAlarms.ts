@@ -10,8 +10,14 @@ export function useAlarms() {
   const fetchAlarms = async () => {
     setLoading(true);
     try {
-      const data = await invoke<Alarm[]>('read_alarms');
-      setAlarms(data.sort((a, b) => a.order - b.order));
+      // Use window.__TAURI_INTERNALS__ to check if Tauri is available
+      if (window.__TAURI_INTERNALS__) {
+        const data = await invoke<Alarm[]>('read_alarms');
+        setAlarms(data.sort((a, b) => a.order - b.order));
+      } else {
+        // Mock data for development when running outside Tauri
+        setAlarms([]);
+      }
       setError(null);
     } catch (err) {
       setError(String(err));

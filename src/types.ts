@@ -1,5 +1,11 @@
 export type RepeatType = 'None' | 'Daily' | 'Weekly' | 'Monthly';
 
+declare global {
+  interface Window {
+    __TAURI_INTERNALS__?: any;
+  }
+}
+
 export interface TriggerInfo {
   date?: string | null;      // YYYY-MM-DD
   time?: string | null;      // HH:mm

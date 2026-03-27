@@ -7,7 +7,7 @@ pub struct Alarm {
     pub repeat_type: RepeatType,
     pub triggers: Vec<TriggerInfo>,
     pub enabled: bool,
-    pub order: i32,
+    pub order: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

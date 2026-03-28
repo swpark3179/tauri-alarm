@@ -2,13 +2,15 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   release:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -38,11 +40,19 @@ jobs:
       - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Tauri Alarm Release v0.1.${{ github.run_number }}
           files: src-tauri/target/release/tauri-alarm.exe
           body: |
-            ## Tauri Alarm 릴리스
+            ## Tauri Alarm 프로그램 개요
 
-            이 릴리스는 별도의 설치 과정 없이 바로 사용할 수 있는 단일 Windows 실행 파일(.exe) 형태로 제공됩니다.
-            다운로드 후 즉시 실행하여 알람 기능을 사용할 수 있습니다.
+            Tauri Alarm은 직관적인 UI와 강력한 성능을 제공하는 데스크톱 알람 및 일정 관리 애플리케이션입니다.
+
+            ### 주요 특징
+            * **즉시 실행 가능**: 복잡한 설치 과정 없이 다운로드 후 바로 실행할 수 있는 단일 Windows 실행 파일(.exe)로 제공됩니다.
+            * **최신 기술 스택**: React와 TypeScript 기반의 유려한 프론트엔드와 Rust 기반의 빠르고 안정적인 백엔드가 결합된 Tauri v2 프레임워크로 제작되었습니다.
+            * **직관적인 사용자 경험**: 누구나 쉽게 알람을 설정하고 관리할 수 있도록 깔끔하고 현대적인 디자인을 채택했습니다.
+
+            아래의 `tauri-alarm.exe` 에셋을 다운로드하여 바로 사용해보세요!
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,7 +3,7 @@ import { formatSchedule } from "./format";
 import { Alarm } from "../types";
 
 describe("formatSchedule", () => {
-  test("returns 'No schedule' when triggers are missing or empty", () => {
+  test("returns '일정 없음' when triggers are missing or empty", () => {
     const alarmWithNoTriggers: Alarm = {
       id: "1",
       title: "Test",
@@ -12,7 +12,7 @@ describe("formatSchedule", () => {
       enabled: true,
       order: 0,
     };
-    expect(formatSchedule(alarmWithNoTriggers)).toBe("No schedule");
+    expect(formatSchedule(alarmWithNoTriggers)).toBe("일정 없음");
 
     const alarmWithUndefinedTriggers: Alarm = {
       id: "1",
@@ -22,7 +22,7 @@ describe("formatSchedule", () => {
       enabled: true,
       order: 0,
     };
-    expect(formatSchedule(alarmWithUndefinedTriggers)).toBe("No schedule");
+    expect(formatSchedule(alarmWithUndefinedTriggers)).toBe("일정 없음");
   });
 
   describe("RepeatType: None", () => {
@@ -38,7 +38,7 @@ describe("formatSchedule", () => {
       expect(formatSchedule(alarm)).toBe("2023-10-27 08:00");
     });
 
-    test("returns 'X dates' for multiple triggers", () => {
+    test("returns 'X개의 날짜' for multiple triggers", () => {
       const alarm: Alarm = {
         id: "1",
         title: "Test",
@@ -50,7 +50,7 @@ describe("formatSchedule", () => {
         enabled: true,
         order: 0,
       };
-      expect(formatSchedule(alarm)).toBe("2 dates");
+      expect(formatSchedule(alarm)).toBe("2개의 날짜");
     });
   });
 
@@ -63,7 +63,7 @@ describe("formatSchedule", () => {
       enabled: true,
       order: 0,
     };
-    expect(formatSchedule(alarm)).toBe("Daily at 07:30");
+    expect(formatSchedule(alarm)).toBe("매일 07:30");
   });
 
   test("RepeatType: Weekly", () => {
@@ -75,7 +75,7 @@ describe("formatSchedule", () => {
       enabled: true,
       order: 0,
     };
-    expect(formatSchedule(alarm)).toBe("Weekly on Monday, Wednesday at 10:00");
+    expect(formatSchedule(alarm)).toBe("매주 월요일, 수요일 10:00");
   });
 
   test("RepeatType: Monthly", () => {
@@ -93,10 +93,10 @@ describe("formatSchedule", () => {
       enabled: true,
       order: 0,
     };
-    expect(formatSchedule(alarm)).toBe("Monthly on the First Friday at 18:00");
+    expect(formatSchedule(alarm)).toBe("매월 첫째 주 금요일 18:00");
   });
 
-  test("returns 'Unknown schedule' for unhandled repeat type", () => {
+  test("returns '알 수 없는 일정' for unhandled repeat type", () => {
     const alarm: Alarm = {
       id: "1",
       title: "Test",
@@ -105,6 +105,6 @@ describe("formatSchedule", () => {
       enabled: true,
       order: 0,
     };
-    expect(formatSchedule(alarm)).toBe("Unknown schedule");
+    expect(formatSchedule(alarm)).toBe("알 수 없는 일정");
   });
 });

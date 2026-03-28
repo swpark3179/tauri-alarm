@@ -101,3 +101,29 @@ pub async fn delete_alarm_content(id: String) -> Result<(), String> {
         Ok(())
     }).await.map_err(|e| e.to_string())?
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_alarm_dir() {
+        let alarm_dir = get_alarm_dir();
+        assert!(alarm_dir.ends_with(".alarm"));
+        assert!(alarm_dir.is_absolute());
+    }
+
+    #[test]
+    fn test_get_alarms_file() {
+        let alarms_file = get_alarms_file();
+        assert!(alarms_file.ends_with("alarms.json"));
+        assert!(alarms_file.parent().unwrap().ends_with(".alarm"));
+    }
+
+    #[test]
+    fn test_get_config_file() {
+        let config_file = get_config_file();
+        assert!(config_file.ends_with("config.properties"));
+        assert!(config_file.parent().unwrap().ends_with(".alarm"));
+    }
+}

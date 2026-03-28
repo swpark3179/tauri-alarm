@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Tauri App (No bundle)
+        run: npm run tauri build -- --no-bundle
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src-tauri/target/release/tauri-alarm.exe
+          body: |
+            ## Tauri Alarm 릴리스
+
+            이 릴리스는 별도의 설치 과정 없이 바로 사용할 수 있는 단일 Windows 실행 파일(.exe) 형태로 제공됩니다.
+            다운로드 후 즉시 실행하여 알람 기능을 사용할 수 있습니다.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

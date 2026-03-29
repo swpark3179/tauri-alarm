@@ -70,6 +70,9 @@ pub async fn write_alarms(alarms: Value) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn read_alarm_content(id: String) -> Result<String, String> {
+    if id.contains('/') || id.contains('\\') || id.contains("..") {
+        return Err("Invalid alarm ID".to_string());
+    }
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
     spawn_blocking(move || {
@@ -83,6 +86,9 @@ pub async fn read_alarm_content(id: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn write_alarm_content(id: String, content: String) -> Result<(), String> {
+    if id.contains('/') || id.contains('\\') || id.contains("..") {
+        return Err("Invalid alarm ID".to_string());
+    }
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
     spawn_blocking(move || {
@@ -92,6 +98,9 @@ pub async fn write_alarm_content(id: String, content: String) -> Result<(), Stri
 
 #[tauri::command]
 pub async fn delete_alarm_content(id: String) -> Result<(), String> {
+    if id.contains('/') || id.contains('\\') || id.contains("..") {
+        return Err("Invalid alarm ID".to_string());
+    }
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
     spawn_blocking(move || {
@@ -125,5 +134,25 @@ mod tests {
         let config_file = get_config_file();
         assert!(config_file.ends_with("config.properties"));
         assert!(config_file.parent().unwrap().ends_with(".alarm"));
+    }
+
+    #[test]
+    fn test_path_traversal() {
+        tauri::async_runtime::block_on(async {
+            let id_with_slash = "foo/bar".to_string();
+            let res_slash = write_alarm_content(id_with_slash, "data".to_string()).await;
+            assert!(res_slash.is_err());
+            assert_eq!(res_slash.unwrap_err(), "Invalid alarm ID");
+
+            let id_with_backslash = "foo\\bar".to_string();
+            let res_backslash = write_alarm_content(id_with_backslash, "data".to_string()).await;
+            assert!(res_backslash.is_err());
+            assert_eq!(res_backslash.unwrap_err(), "Invalid alarm ID");
+
+            let id_with_dots = "../foo".to_string();
+            let res_dots = write_alarm_content(id_with_dots, "data".to_string()).await;
+            assert!(res_dots.is_err());
+            assert_eq!(res_dots.unwrap_err(), "Invalid alarm ID");
+        });
     }
 }

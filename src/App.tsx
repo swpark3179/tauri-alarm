@@ -50,10 +50,11 @@ const App: React.FC = () => {
       await invoke("write_alarm_content", { id: alarm.id, content });
 
       // Save alarm to json
-      const existing = alarms.find((a) => a.id === alarm.id);
+      const index = alarms.findIndex((a) => a.id === alarm.id);
       let newAlarms;
-      if (existing) {
-        newAlarms = alarms.map((a) => (a.id === alarm.id ? alarm : a));
+      if (index !== -1) {
+        newAlarms = [...alarms];
+        newAlarms[index] = alarm;
       } else {
         newAlarms = [...alarms, alarm];
       }

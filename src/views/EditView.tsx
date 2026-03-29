@@ -11,6 +11,7 @@ import {
   Tabs,
   Tab,
   IconButton,
+  Tooltip,
   Grid,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
@@ -123,9 +124,13 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                 />
               </Grid>
               <Grid size={2}>
-                <IconButton onClick={() => handleRemoveTrigger(i)} disabled={triggers.length === 1} color="error" aria-label="날짜/시간 삭제">
-                  <Delete />
-                </IconButton>
+                <Tooltip title="날짜/시간 삭제">
+                  <span>
+                    <IconButton onClick={() => handleRemoveTrigger(i)} disabled={triggers.length === 1} color="error" aria-label="날짜/시간 삭제">
+                      <Delete />
+                    </IconButton>
+                  </span>
+                </Tooltip>
               </Grid>
             </Grid>
           ))}

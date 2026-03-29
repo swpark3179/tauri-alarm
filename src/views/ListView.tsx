@@ -10,7 +10,8 @@ import {
   CircularProgress,
   Paper,
   Divider,
-  Fab
+  Fab,
+  Tooltip
 } from '@mui/material';
 import {
   ArrowUpward,
@@ -64,32 +65,48 @@ const ListView: React.FC<ListViewProps> = ({
                       disabled={loading}
                       inputProps={{ 'aria-label': '알람 활성화 상태 변경' }}
                     />
-                    <IconButton onClick={() => onEdit(alarm)} disabled={loading} aria-label="알람 편집">
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => onDelete(alarm.id)} disabled={loading} color="error" aria-label="알람 삭제">
-                      <Delete fontSize="small" />
-                    </IconButton>
+                    <Tooltip title="알람 편집">
+                      <span>
+                        <IconButton onClick={() => onEdit(alarm)} disabled={loading} aria-label="알람 편집">
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title="알람 삭제">
+                      <span>
+                        <IconButton onClick={() => onDelete(alarm.id)} disabled={loading} color="error" aria-label="알람 삭제">
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   </Box>
                 }
               >
                 <Box sx={{ display: 'flex', flexDirection: 'column', mr: 1 }}>
-                  <IconButton
-                    size="small"
-                    disabled={index === 0 || loading}
-                    onClick={() => onReorder(alarm.id, 'up')}
-                    aria-label="순서 위로 이동"
-                  >
-                    <ArrowUpward fontSize="inherit" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    disabled={index === alarmList.length - 1 || loading}
-                    onClick={() => onReorder(alarm.id, 'down')}
-                    aria-label="순서 아래로 이동"
-                  >
-                    <ArrowDownward fontSize="inherit" />
-                  </IconButton>
+                  <Tooltip title="순서 위로 이동">
+                    <span>
+                      <IconButton
+                        size="small"
+                        disabled={index === 0 || loading}
+                        onClick={() => onReorder(alarm.id, 'up')}
+                        aria-label="순서 위로 이동"
+                      >
+                        <ArrowUpward fontSize="inherit" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="순서 아래로 이동">
+                    <span>
+                      <IconButton
+                        size="small"
+                        disabled={index === alarmList.length - 1 || loading}
+                        onClick={() => onReorder(alarm.id, 'down')}
+                        aria-label="순서 아래로 이동"
+                      >
+                        <ArrowDownward fontSize="inherit" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                 </Box>
                 <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
                 <ListItemText
@@ -127,15 +144,19 @@ const ListView: React.FC<ListViewProps> = ({
         {renderAlarmList(periodicAlarms, '주기적 알림')}
       </Box>
 
-      <Fab
-        color="secondary"
-        aria-label="새 알람 추가"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        onClick={() => onEdit()}
-        disabled={loading}
-      >
-        <Add />
-      </Fab>
+      <Tooltip title="새 알람 추가" placement="left">
+        <span>
+          <Fab
+            color="secondary"
+            aria-label="새 알람 추가"
+            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+            onClick={() => onEdit()}
+            disabled={loading}
+          >
+            <Add />
+          </Fab>
+        </span>
+      </Tooltip>
     </Box>
   );
 };

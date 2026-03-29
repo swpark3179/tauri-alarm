@@ -39,21 +39,19 @@ const ListView: React.FC<ListViewProps> = ({
   onToggle,
   onReorder,
 }) => {
-  return (
-    <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'primary.main', color: 'white' }}>
-        <Typography variant="h6">알람 목록</Typography>
-        {loading && <CircularProgress size={24} color="inherit" />}
-      </Box>
+  const oneTimeAlarms = alarms.filter((a) => a.repeat_type === 'None');
+  const periodicAlarms = alarms.filter((a) => a.repeat_type !== 'None');
 
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 1, bgcolor: 'background.default' }}>
-        {alarms.length === 0 && !loading && (
-          <Typography align="center" color="text.secondary" sx={{ mt: 4 }}>
-            등록된 알람이 없습니다.
-          </Typography>
-        )}
-        <List>
-          {alarms.map((alarm, index) => (
+  const renderAlarmList = (alarmList: Alarm[], title: string) => {
+    if (alarmList.length === 0) return null;
+
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, ml: 1, fontWeight: 'bold' }}>
+          {title}
+        </Typography>
+        <List disablePadding>
+          {alarmList.map((alarm, index) => (
             <Paper key={alarm.id} sx={{ mb: 1, p: 1 }}>
               <ListItem
                 disablePadding
@@ -86,7 +84,7 @@ const ListView: React.FC<ListViewProps> = ({
                   </IconButton>
                   <IconButton
                     size="small"
-                    disabled={index === alarms.length - 1 || loading}
+                    disabled={index === alarmList.length - 1 || loading}
                     onClick={() => onReorder(alarm.id, 'down')}
                     aria-label="순서 아래로 이동"
                   >
@@ -102,6 +100,31 @@ const ListView: React.FC<ListViewProps> = ({
             </Paper>
           ))}
         </List>
+      </Box>
+    );
+  };
+
+  return (
+    <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'primary.main', color: 'white' }}>
+        <Typography variant="h6">알람 목록</Typography>
+        {loading && <CircularProgress size={24} color="inherit" />}
+      </Box>
+
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 1, bgcolor: 'background.default' }}>
+        {alarms.length === 0 && !loading && (
+          <Typography align="center" color="text.secondary" sx={{ mt: 4 }}>
+            등록된 알람이 없습니다.
+          </Typography>
+        )}
+
+        {renderAlarmList(oneTimeAlarms, '1회성 알림')}
+
+        {oneTimeAlarms.length > 0 && periodicAlarms.length > 0 && (
+          <Divider sx={{ my: 2 }} />
+        )}
+
+        {renderAlarmList(periodicAlarms, '주기적 알림')}
       </Box>
 
       <Fab

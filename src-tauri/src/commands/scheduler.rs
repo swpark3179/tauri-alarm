@@ -1,6 +1,7 @@
-use std::process::Command;
+use std::fmt::Write;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
+use std::process::Command;
 
 use crate::models::{Alarm, RepeatType};
 use std::fs;
@@ -32,13 +33,13 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
     let exec_path = get_executable_path()?;
     let home_dir = dirs::home_dir().ok_or("Failed to get home directory")?;
     let working_dir = format!("{}\\.alarm", home_dir.display());
-    
+
     // First, unregister if it exists to overwrite cleanly
     #[cfg(target_os = "windows")]
     let mut cmd = Command::new("powershell");
     #[cfg(not(target_os = "windows"))]
     let mut cmd = Command::new("sh");
-    
+
     #[cfg(target_os = "windows")]
     cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
 
@@ -51,7 +52,7 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
     let settings_ps = "$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun -Hidden";
 
     let mut triggers_ps = String::new();
-    
+
     match alarm.repeat_type {
         RepeatType::None => {
             if alarm.triggers.is_empty() {
@@ -61,43 +62,62 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
             for (i, t) in alarm.triggers.iter().enumerate() {
                 let date = t.date.as_ref().ok_or("Missing date")?;
                 let time = t.time.as_ref().ok_or("Missing time")?;
-                let datetime = format!("{}T{}", date, time);
-                triggers_ps.push_str(&format!("(New-ScheduledTaskTrigger -Once -At '{}')", datetime));
+                write!(
+                    &mut triggers_ps,
+                    "(New-ScheduledTaskTrigger -Once -At '{}T{}')",
+                    date, time
+                )
+                .unwrap();
                 if i < alarm.triggers.len() - 1 {
                     triggers_ps.push_str(", ");
                 }
             }
             triggers_ps.push_str(")");
-        },
+        }
         RepeatType::Daily => {
-            if alarm.triggers.is_empty() { return Err("No triggers provided".into()); }
+            if alarm.triggers.is_empty() {
+                return Err("No triggers provided".into());
+            }
             let time = alarm.triggers[0].time.as_ref().ok_or("Missing time")?;
-            triggers_ps = format!("$Triggers = @(New-ScheduledTaskTrigger -Daily -At '{}')", time);
-        },
+            triggers_ps = format!(
+                "$Triggers = @(New-ScheduledTaskTrigger -Daily -At '{}')",
+                time
+            );
+        }
         RepeatType::Weekly => {
-            if alarm.triggers.is_empty() { return Err("No triggers provided".into()); }
+            if alarm.triggers.is_empty() {
+                return Err("No triggers provided".into());
+            }
             let t = &alarm.triggers[0];
             let time = t.time.as_ref().ok_or("Missing time")?;
             let days_of_week = t.days_of_week.as_ref().ok_or("Missing days of week")?;
-            if days_of_week.is_empty() { return Err("No days of week provided".into()); }
+            if days_of_week.is_empty() {
+                return Err("No days of week provided".into());
+            }
             let days_str = days_of_week.join(", ");
-            triggers_ps = format!("$Triggers = @(New-ScheduledTaskTrigger -Weekly -DaysOfWeek {} -At '{}')", days_str, time);
-        },
+            triggers_ps = format!(
+                "$Triggers = @(New-ScheduledTaskTrigger -Weekly -DaysOfWeek {} -At '{}')",
+                days_str, time
+            );
+        }
         RepeatType::Monthly => {
-             // For Monthly, we need to handle Nth week of the month and specific day
-             if alarm.triggers.is_empty() { return Err("No triggers provided".into()); }
-             let t = &alarm.triggers[0];
-             let time = t.time.as_ref().ok_or("Missing time")?;
-             let days_of_week = t.days_of_week.as_ref().ok_or("Missing days of week")?;
-             let day_of_week = days_of_week.get(0).ok_or("Missing day of week")?; // Assuming one day
-             let week_of_month = t.weeks_of_month.as_ref().ok_or("Missing week of month")?; // e.g., "First", "Last"
-             // PowerShell New-ScheduledTaskTrigger does not directly support DayOfWeek + WeekOfMonth easily with standard parameters in the basic cmdlet, 
-             // but we can use the COM object or specific XML formulation.
-             // To keep it simple and stable via PowerShell, we can construct the specific trigger string.
-             // Note: Standard New-ScheduledTaskTrigger doesn't easily support "First Monday of month".
-             // We'll construct a custom Trigger object in PowerShell.
-             
-             let custom_trigger = format!(r#"
+            // For Monthly, we need to handle Nth week of the month and specific day
+            if alarm.triggers.is_empty() {
+                return Err("No triggers provided".into());
+            }
+            let t = &alarm.triggers[0];
+            let time = t.time.as_ref().ok_or("Missing time")?;
+            let days_of_week = t.days_of_week.as_ref().ok_or("Missing days of week")?;
+            let day_of_week = days_of_week.get(0).ok_or("Missing day of week")?; // Assuming one day
+            let week_of_month = t.weeks_of_month.as_ref().ok_or("Missing week of month")?; // e.g., "First", "Last"
+                                                                                           // PowerShell New-ScheduledTaskTrigger does not directly support DayOfWeek + WeekOfMonth easily with standard parameters in the basic cmdlet,
+                                                                                           // but we can use the COM object or specific XML formulation.
+                                                                                           // To keep it simple and stable via PowerShell, we can construct the specific trigger string.
+                                                                                           // Note: Standard New-ScheduledTaskTrigger doesn't easily support "First Monday of month".
+                                                                                           // We'll construct a custom Trigger object in PowerShell.
+
+            let custom_trigger = format!(
+                r#"
 $Trigger = New-ScheduledTaskTrigger -At '{}' -Once
 $Trigger.Repetition = $null
 $Trigger = [Microsoft.Management.Infrastructure.CimInstance]::new("MSFT_TaskMonthlyDOWTrigger", "root/Microsoft/Windows/TaskScheduler")
@@ -107,14 +127,19 @@ $Trigger.DaysOfWeek = [uint16]([System.DayOfWeek]::{})
 $weeks = @{{ "First"=1; "Second"=2; "Third"=3; "Fourth"=4; "Last"=5 }}
 $Trigger.WeeksOfMonth = $weeks['{}']
 $Triggers = @($Trigger)
-             "#, time, time, day_of_week, week_of_month);
-             triggers_ps = custom_trigger;
+             "#,
+                time, time, day_of_week, week_of_month
+            );
+            triggers_ps = custom_trigger;
         }
     }
 
     let register_cmd = format!("Register-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\' -Action $Action -Trigger $Triggers -Settings $Settings -Description 'Tauri Alarm Task'", task_name);
-    
-    let full_script = format!("{}\n{}\n{}\n{}", action_ps, settings_ps, triggers_ps, register_cmd);
+
+    let full_script = format!(
+        "{}\n{}\n{}\n{}",
+        action_ps, settings_ps, triggers_ps, register_cmd
+    );
 
     #[cfg(target_os = "windows")]
     let mut cmd2 = Command::new("powershell");
@@ -134,7 +159,7 @@ $Triggers = @($Trigger)
         let err = String::from_utf8_lossy(&output.stderr);
         return Err(format!("Failed to register task: {}", err));
     }
-    
+
     if !alarm.enabled {
         let _ = disable_task(alarm.id).await;
     }
@@ -145,7 +170,7 @@ $Triggers = @($Trigger)
 #[tauri::command]
 pub async fn unregister_task(id: String) -> Result<(), String> {
     let task_name = format!("TauriAlarm_{}", id);
-    
+
     #[cfg(target_os = "windows")]
     let mut cmd = Command::new("powershell");
     #[cfg(not(target_os = "windows"))]
@@ -156,7 +181,10 @@ pub async fn unregister_task(id: String) -> Result<(), String> {
 
     let output = cmd
         .arg("-Command")
-        .arg(format!("Unregister-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\' -Confirm:$false", task_name))
+        .arg(format!(
+            "Unregister-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\' -Confirm:$false",
+            task_name
+        ))
         .output()
         .map_err(|e: std::io::Error| e.to_string())?;
 
@@ -181,7 +209,10 @@ pub async fn enable_task(id: String) -> Result<(), String> {
 
     let output = cmd
         .arg("-Command")
-        .arg(format!("Enable-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\'", task_name))
+        .arg(format!(
+            "Enable-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\'",
+            task_name
+        ))
         .output()
         .map_err(|e: std::io::Error| e.to_string())?;
 
@@ -206,7 +237,10 @@ pub async fn disable_task(id: String) -> Result<(), String> {
 
     let output = cmd
         .arg("-Command")
-        .arg(format!("Disable-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\'", task_name))
+        .arg(format!(
+            "Disable-ScheduledTask -TaskName '{}' -TaskPath '\\AlarmManager\\'",
+            task_name
+        ))
         .output()
         .map_err(|e: std::io::Error| e.to_string())?;
 

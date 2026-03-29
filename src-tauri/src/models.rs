@@ -20,10 +20,10 @@ pub enum RepeatType {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TriggerInfo {
-    pub date: Option<String>,      // YYYY-MM-DD
-    pub time: Option<String>,      // HH:mm
+    pub date: Option<String>,              // YYYY-MM-DD
+    pub time: Option<String>,              // HH:mm
     pub days_of_week: Option<Vec<String>>, // Monday, Tuesday, etc.
-    pub weeks_of_month: Option<String>, // First, Second, Third, Fourth, Last
+    pub weeks_of_month: Option<String>,    // First, Second, Third, Fourth, Last
 }
 
 #[cfg(test)]
@@ -63,14 +63,12 @@ mod tests {
             id: "456".to_string(),
             title: "Weekly Meeting".to_string(),
             repeat_type: RepeatType::Weekly,
-            triggers: vec![
-                TriggerInfo {
-                    date: None,
-                    time: Some("10:00".to_string()),
-                    days_of_week: Some(vec!["Monday".to_string()]),
-                    weeks_of_month: None,
-                }
-            ],
+            triggers: vec![TriggerInfo {
+                date: None,
+                time: Some("10:00".to_string()),
+                days_of_week: Some(vec!["Monday".to_string()]),
+                weeks_of_month: None,
+            }],
             enabled: false,
             order: 2,
         };

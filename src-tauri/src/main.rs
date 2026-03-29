@@ -1,8 +1,11 @@
-mod models;
 mod commands;
+mod models;
 
-use commands::fs::{init_fs, read_alarms, write_alarms, read_alarm_content, write_alarm_content, delete_alarm_content};
-use commands::scheduler::{register_task, unregister_task, enable_task, disable_task};
+use commands::fs::{
+    delete_alarm_content, init_fs, read_alarm_content, read_alarms, write_alarm_content,
+    write_alarms,
+};
+use commands::scheduler::{disable_task, enable_task, register_task, unregister_task};
 use commands::window::set_window_position;
 
 fn main() {

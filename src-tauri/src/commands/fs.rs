@@ -1,6 +1,6 @@
-use std::path::PathBuf;
-use std::fs;
 use serde_json::Value;
+use std::fs;
+use std::path::PathBuf;
 use tauri::async_runtime::spawn_blocking;
 
 fn validate_id(id: &str) -> Result<(), String> {
@@ -52,15 +52,17 @@ pub async fn init_fs() -> Result<(), String> {
             fs::write(&config_file, default_config).map_err(|e| e.to_string())?;
         }
         Ok(())
-    }).await.map_err(|e| e.to_string())?
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
 pub async fn read_alarms() -> Result<Value, String> {
     let alarms_file = get_alarms_file();
-    let data = spawn_blocking(move || {
-        fs::read_to_string(alarms_file).map_err(|e| e.to_string())
-    }).await.map_err(|e| e.to_string())??;
+    let data = spawn_blocking(move || fs::read_to_string(alarms_file).map_err(|e| e.to_string()))
+        .await
+        .map_err(|e| e.to_string())??;
 
     let json: Value = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     Ok(json)
@@ -70,9 +72,9 @@ pub async fn read_alarms() -> Result<Value, String> {
 pub async fn write_alarms(alarms: Value) -> Result<(), String> {
     let alarms_file = get_alarms_file();
     let data = serde_json::to_string_pretty(&alarms).map_err(|e| e.to_string())?;
-    spawn_blocking(move || {
-        fs::write(alarms_file, data).map_err(|e| e.to_string())
-    }).await.map_err(|e| e.to_string())?
+    spawn_blocking(move || fs::write(alarms_file, data).map_err(|e| e.to_string()))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -86,7 +88,9 @@ pub async fn read_alarm_content(id: String) -> Result<String, String> {
         } else {
             Ok("".to_string())
         }
-    }).await.map_err(|e| e.to_string())?
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -94,9 +98,9 @@ pub async fn write_alarm_content(id: String, content: String) -> Result<(), Stri
     validate_id(&id)?;
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
-    spawn_blocking(move || {
-        fs::write(path, content).map_err(|e| e.to_string())
-    }).await.map_err(|e| e.to_string())?
+    spawn_blocking(move || fs::write(path, content).map_err(|e| e.to_string()))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -109,7 +113,9 @@ pub async fn delete_alarm_content(id: String) -> Result<(), String> {
             fs::remove_file(path).map_err(|e| e.to_string())?;
         }
         Ok(())
-    }).await.map_err(|e| e.to_string())?
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[cfg(test)]

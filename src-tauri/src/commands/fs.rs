@@ -3,6 +3,13 @@ use std::fs;
 use serde_json::Value;
 use tauri::async_runtime::spawn_blocking;
 
+fn validate_id(id: &str) -> Result<(), String> {
+    if id.contains('/') || id.contains('\\') || id.contains("..") {
+        return Err("Invalid ID: Path traversal detected".to_string());
+    }
+    Ok(())
+}
+
 pub fn get_alarm_dir() -> PathBuf {
     let mut path = dirs::home_dir().expect("Failed to get home directory");
     path.push(".alarm");
@@ -70,6 +77,7 @@ pub async fn write_alarms(alarms: Value) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn read_alarm_content(id: String) -> Result<String, String> {
+    validate_id(&id)?;
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
     spawn_blocking(move || {
@@ -83,6 +91,7 @@ pub async fn read_alarm_content(id: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn write_alarm_content(id: String, content: String) -> Result<(), String> {
+    validate_id(&id)?;
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
     spawn_blocking(move || {
@@ -92,6 +101,7 @@ pub async fn write_alarm_content(id: String, content: String) -> Result<(), Stri
 
 #[tauri::command]
 pub async fn delete_alarm_content(id: String) -> Result<(), String> {
+    validate_id(&id)?;
     let mut path = get_alarm_dir();
     path.push(format!("{}.md", id));
     spawn_blocking(move || {
@@ -125,5 +135,24 @@ mod tests {
         let config_file = get_config_file();
         assert!(config_file.ends_with("config.properties"));
         assert!(config_file.parent().unwrap().ends_with(".alarm"));
+    }
+
+    #[test]
+    fn test_validate_id() {
+        // Valid IDs
+        assert!(validate_id("12345").is_ok());
+        assert!(validate_id("abcde-12345").is_ok());
+        assert!(validate_id("some_valid_id").is_ok());
+
+        // Invalid IDs with path traversal
+        assert!(validate_id("../12345").is_err());
+        assert!(validate_id("12345/..").is_err());
+        assert!(validate_id("12345\\..").is_err());
+        assert!(validate_id("dir/12345").is_err());
+        assert!(validate_id("dir\\12345").is_err());
+        assert!(validate_id("..\\12345").is_err());
+        assert!(validate_id("..").is_err());
+        assert!(validate_id("/12345").is_err());
+        assert!(validate_id("\\12345").is_err());
     }
 }

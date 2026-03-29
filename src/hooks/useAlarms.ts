@@ -71,23 +71,31 @@ export function useAlarms() {
   };
 
   const reorderAlarms = async (id: string, direction: 'up' | 'down') => {
-    const index = alarms.findIndex((a) => a.id === id);
-    if (index < 0) return;
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === alarms.length - 1) return;
+    const alarm = alarms.find((a) => a.id === id);
+    if (!alarm) return;
+
+    const isOneTime = alarm.repeat_type === 'None';
+    const groupAlarms = alarms.filter((a) => (a.repeat_type === 'None') === isOneTime);
+
+    const groupIndex = groupAlarms.findIndex((a) => a.id === id);
+    if (groupIndex < 0) return;
+    if (direction === 'up' && groupIndex === 0) return;
+    if (direction === 'down' && groupIndex === groupAlarms.length - 1) return;
+
+    const swapWith = groupAlarms[direction === 'up' ? groupIndex - 1 : groupIndex + 1];
+
+    const index = alarms.findIndex((a) => a.id === alarm.id);
+    const swapIndex = alarms.findIndex((a) => a.id === swapWith.id);
 
     const newAlarms = [...alarms];
-    const swapIndex = direction === 'up' ? index - 1 : index + 1;
     
     // Swap order property
     const tempOrder = newAlarms[index].order;
     newAlarms[index].order = newAlarms[swapIndex].order;
     newAlarms[swapIndex].order = tempOrder;
 
-    // Swap position in array
-    const temp = newAlarms[index];
-    newAlarms[index] = newAlarms[swapIndex];
-    newAlarms[swapIndex] = temp;
+    // Resort the array
+    newAlarms.sort((a, b) => a.order - b.order);
 
     await saveAlarms(newAlarms);
   };

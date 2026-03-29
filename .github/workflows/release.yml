@@ -43,6 +43,7 @@ jobs:
           tag_name: v0.1.${{ github.run_number }}
           name: Tauri Alarm Release v0.1.${{ github.run_number }}
           files: src-tauri/target/release/tauri-alarm.exe
+          generate_release_notes: true
           body: |
             ## Tauri Alarm 프로그램 개요
 

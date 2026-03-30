@@ -7,15 +7,15 @@ use crate::models::{Alarm, RepeatType};
 use std::fs;
 use std::path::PathBuf;
 
-fn get_config_file() -> PathBuf {
-    let mut path = dirs::home_dir().expect("Failed to get home directory");
+fn get_config_file() -> Result<PathBuf, String> {
+    let mut path = dirs::home_dir().ok_or("Failed to get home directory".to_string())?;
     path.push(".alarm");
     path.push("config.properties");
-    path
+    Ok(path)
 }
 
 fn get_executable_path() -> Result<String, String> {
-    let config_file = get_config_file();
+    let config_file = get_config_file()?;
     if let Ok(content) = fs::read_to_string(&config_file) {
         for line in content.lines() {
             if line.starts_with("executable_path=") {
@@ -67,7 +67,7 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
                     "(New-ScheduledTaskTrigger -Once -At '{}T{}')",
                     date, time
                 )
-                .unwrap();
+                .map_err(|e| e.to_string())?;
                 if i < alarm.triggers.len() - 1 {
                     triggers_ps.push_str(", ");
                 }

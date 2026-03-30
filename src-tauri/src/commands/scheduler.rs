@@ -67,7 +67,7 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
                     "(New-ScheduledTaskTrigger -Once -At '{}T{}')",
                     date, time
                 )
-                .unwrap();
+                .map_err(|e| e.to_string())?;
                 if i < alarm.triggers.len() - 1 {
                     triggers_ps.push_str(", ");
                 }

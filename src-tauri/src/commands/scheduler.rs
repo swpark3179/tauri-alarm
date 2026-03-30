@@ -172,7 +172,7 @@ $Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root
 $Trigger.PSTypeNames.Insert(0, "Microsoft.Management.Infrastructure.CimInstance#MSFT_TaskTrigger")
 $Triggers = @($Trigger)
              "#,
-                day_of_week, time, week_of_month
+                exec_path, alarm.id, working_dir, time, day_of_week, week_of_month
             );
 
             #[cfg(target_os = "windows")]

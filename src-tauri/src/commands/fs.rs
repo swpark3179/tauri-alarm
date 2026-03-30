@@ -5,7 +5,7 @@ use tauri::async_runtime::spawn_blocking;
 
 fn validate_id(id: &str) -> Result<(), String> {
     if id.contains('/') || id.contains('\\') || id.contains("..") {
-        return Err("Invalid ID: Path traversal detected".to_string());
+        return Err("Invalid alarm ID".to_string());
     }
     Ok(())
 }

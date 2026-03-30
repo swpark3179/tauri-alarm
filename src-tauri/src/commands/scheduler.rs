@@ -108,17 +108,45 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
             let t = &alarm.triggers[0];
             let time = t.time.as_ref().ok_or("Missing time")?;
             let days_of_week = t.days_of_week.as_ref().ok_or("Missing days of week")?;
-            let day_of_week = days_of_week.get(0).ok_or("Missing day of week")?; // Assuming one day
-            let week_of_month = t.weeks_of_month.as_ref().ok_or("Missing week of month")?; // e.g., "First", "Last"
-                                                                                           // PowerShell New-ScheduledTaskTrigger does not directly support DayOfWeek + WeekOfMonth easily with standard parameters in the basic cmdlet,
-                                                                                           // but we can use the COM object or specific XML formulation.
-                                                                                           // To keep it simple and stable via PowerShell, we can construct the specific trigger string.
-                                                                                           // Note: Standard New-ScheduledTaskTrigger doesn't easily support "First Monday of month".
-                                                                                           // We'll construct a custom Trigger object in PowerShell.
+            let day_of_week = days_of_week.get(0).ok_or("Missing day of week")?;
+            let week_of_month = t.weeks_of_month.as_ref().ok_or("Missing week of month")?;
 
-            let custom_trigger = format!(
+            // PowerShell's ScheduledTasks module has broken support for MonthlyDOW triggers via CIM.
+            // (e.g., MismatchedPSTypeName or HRESULT 0x80041002 when bypassing types).
+            // We use the COM object `Schedule.Service` directly instead.
+
+            let full_script = format!(
                 r#"
-# Calculate DaysOfWeek bitmask
+$service = New-Object -ComObject 'Schedule.Service'
+$service.Connect()
+
+$folder = $service.GetFolder("\")
+try {{
+    $folder = $folder.GetFolder("AlarmManager")
+}} catch {{
+    $folder = $folder.CreateFolder("AlarmManager", $null)
+}}
+
+$taskDefinition = $service.NewTask(0)
+$taskDefinition.RegistrationInfo.Description = 'Tauri Alarm Task'
+
+$settings = $taskDefinition.Settings
+$settings.StartWhenAvailable = $true
+$settings.AllowStartIfOnBatteries = $true
+$settings.DisallowStartIfOnBatteries = $false
+$settings.StopIfGoingOnBatteries = $false
+$settings.WakeToRun = $true
+$settings.Hidden = $true
+
+$action = $taskDefinition.Actions.Create(0) # TASK_ACTION_EXEC
+$action.Path = '{}'
+$action.Arguments = '--alarm-id {}'
+$action.WorkingDirectory = '{}'
+
+$trigger = $taskDefinition.Triggers.Create(5) # TASK_TRIGGER_MONTHLYDOW
+$trigger.StartBoundary = (Get-Date "{}").ToString("s")
+$trigger.MonthsOfYear = 4095 # All months
+
 $dayStr = "{}"
 $dayBitmask = 0
 switch ($dayStr) {{
@@ -130,28 +158,46 @@ switch ($dayStr) {{
     "Friday"    {{ $dayBitmask = 32 }}
     "Saturday"  {{ $dayBitmask = 64 }}
 }}
+$trigger.DaysOfWeek = $dayBitmask
 
-$Props = @{{
-    StartBoundary = (Get-Date "{}").ToString("s")
-    MonthsOfYear  = [uint16]4095
-    DaysOfWeek    = [uint16]$dayBitmask
-}}
-
-# Logic for week of month (1=First, 2=Second, 3=Third, 4=Fourth, 5=Last)
 $weekStr = "{}"
 if ($weekStr -eq "Last") {{
-    $Props.RunOnLastWeekOfMonth = $true
+    $trigger.RunOnLastWeekOfMonth = $true
 }} else {{
     $weeks = @{{ "First"=1; "Second"=2; "Third"=4; "Fourth"=8 }}
-    $Props.WeeksOfMonth = [uint16]$weeks[$weekStr]
+    $trigger.WeeksOfMonth = $weeks[$weekStr]
 }}
 
-$Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root/Microsoft/Windows/TaskScheduler -ClientOnly -Property $Props
-$Triggers = @($Trigger)
-             "#,
-                day_of_week, time, week_of_month
+# CreateOrUpdate task
+$folder.RegisterTaskDefinition('{}', $taskDefinition, 6, $null, $null, 3)
+"#,
+                exec_path, alarm.id, working_dir, time, day_of_week, week_of_month, task_name
             );
-            triggers_ps = custom_trigger;
+
+            #[cfg(target_os = "windows")]
+            let mut cmd2 = Command::new("powershell");
+            #[cfg(not(target_os = "windows"))]
+            let mut cmd2 = Command::new("sh");
+
+            #[cfg(target_os = "windows")]
+            cmd2.creation_flags(0x08000000);
+
+            let output = cmd2
+                .arg("-Command")
+                .arg(&full_script)
+                .output()
+                .map_err(|e: std::io::Error| e.to_string())?;
+
+            if !output.status.success() {
+                let err = String::from_utf8_lossy(&output.stderr);
+                return Err(format!("Failed to register task: {}", err));
+            }
+
+            if !alarm.enabled {
+                let _ = disable_task(alarm.id).await;
+            }
+
+            return Ok(());
         }
     }
 

@@ -168,10 +168,11 @@ if ($weekStr -eq "Last") {{
     $trigger.WeeksOfMonth = $weeks[$weekStr]
 }}
 
-# CreateOrUpdate task
-$folder.RegisterTaskDefinition('{}', $taskDefinition, 6, $null, $null, 3)
-"#,
-                exec_path, alarm.id, working_dir, time, day_of_week, week_of_month, task_name
+$Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root/Microsoft/Windows/TaskScheduler -ClientOnly -Property $Props
+$Trigger.PSTypeNames.Insert(0, "Microsoft.Management.Infrastructure.CimInstance#MSFT_TaskTrigger")
+$Triggers = @($Trigger)
+             "#,
+                day_of_week, time, week_of_month
             );
 
             #[cfg(target_os = "windows")]

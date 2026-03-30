@@ -136,6 +136,7 @@ switch ($dayStr) {{
     "Saturday"  {{ $dayBitmask = 64 }}
 }}
 $Trigger.DaysOfWeek = [uint16]$dayBitmask
+$Trigger.MonthsOfYear = [uint16]4095
 
 # Logic for week of month (1=First, 2=Second, 3=Third, 4=Fourth, 5=Last)
 $weekStr = "{}"

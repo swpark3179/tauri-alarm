@@ -118,11 +118,6 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
 
             let custom_trigger = format!(
                 r#"
-$Trigger = New-ScheduledTaskTrigger -At '{}' -Once
-$Trigger.Repetition = $null
-$Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root/Microsoft/Windows/TaskScheduler -ClientOnly
-$Trigger.StartBoundary = (Get-Date "{}").ToString("s")
-
 # Calculate DaysOfWeek bitmask
 $dayStr = "{}"
 $dayBitmask = 0
@@ -135,20 +130,26 @@ switch ($dayStr) {{
     "Friday"    {{ $dayBitmask = 32 }}
     "Saturday"  {{ $dayBitmask = 64 }}
 }}
-$Trigger.DaysOfWeek = [uint16]$dayBitmask
-$Trigger.MonthsOfYear = [uint16]4095
+
+$Props = @{{
+    StartBoundary = (Get-Date "{}").ToString("s")
+    MonthsOfYear  = [uint16]4095
+    DaysOfWeek    = [uint16]$dayBitmask
+}}
 
 # Logic for week of month (1=First, 2=Second, 3=Third, 4=Fourth, 5=Last)
 $weekStr = "{}"
 if ($weekStr -eq "Last") {{
-    $Trigger.RunOnLastWeekOfMonth = $true
+    $Props.RunOnLastWeekOfMonth = $true
 }} else {{
     $weeks = @{{ "First"=1; "Second"=2; "Third"=4; "Fourth"=8 }}
-    $Trigger.WeeksOfMonth = [uint16]$weeks[$weekStr]
+    $Props.WeeksOfMonth = [uint16]$weeks[$weekStr]
 }}
+
+$Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root/Microsoft/Windows/TaskScheduler -ClientOnly -Property $Props
 $Triggers = @($Trigger)
              "#,
-                time, time, day_of_week, week_of_month
+                day_of_week, time, week_of_month
             );
             triggers_ps = custom_trigger;
         }

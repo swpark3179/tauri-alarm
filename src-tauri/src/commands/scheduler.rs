@@ -120,12 +120,31 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
                 r#"
 $Trigger = New-ScheduledTaskTrigger -At '{}' -Once
 $Trigger.Repetition = $null
-$Trigger = [Microsoft.Management.Infrastructure.CimInstance]::new("MSFT_TaskMonthlyDOWTrigger", "root/Microsoft/Windows/TaskScheduler")
+$Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root/Microsoft/Windows/TaskScheduler -ClientOnly
 $Trigger.StartBoundary = (Get-Date "{}").ToString("s")
-$Trigger.DaysOfWeek = [uint16]([System.DayOfWeek]::{})
+
+# Calculate DaysOfWeek bitmask
+$dayStr = "{}"
+$dayBitmask = 0
+switch ($dayStr) {{
+    "Sunday"    {{ $dayBitmask = 1 }}
+    "Monday"    {{ $dayBitmask = 2 }}
+    "Tuesday"   {{ $dayBitmask = 4 }}
+    "Wednesday" {{ $dayBitmask = 8 }}
+    "Thursday"  {{ $dayBitmask = 16 }}
+    "Friday"    {{ $dayBitmask = 32 }}
+    "Saturday"  {{ $dayBitmask = 64 }}
+}}
+$Trigger.DaysOfWeek = [uint16]$dayBitmask
+
 # Logic for week of month (1=First, 2=Second, 3=Third, 4=Fourth, 5=Last)
-$weeks = @{{ "First"=1; "Second"=2; "Third"=3; "Fourth"=4; "Last"=5 }}
-$Trigger.WeeksOfMonth = $weeks['{}']
+$weekStr = "{}"
+if ($weekStr -eq "Last") {{
+    $Trigger.RunOnLastWeekOfMonth = $true
+}} else {{
+    $weeks = @{{ "First"=1; "Second"=2; "Third"=4; "Fourth"=8 }}
+    $Trigger.WeeksOfMonth = [uint16]$weeks[$weekStr]
+}}
 $Triggers = @($Trigger)
              "#,
                 time, time, day_of_week, week_of_month

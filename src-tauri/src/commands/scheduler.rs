@@ -147,6 +147,7 @@ if ($weekStr -eq "Last") {{
 }}
 
 $Trigger = New-CimInstance -ClassName MSFT_TaskMonthlyDOWTrigger -Namespace Root/Microsoft/Windows/TaskScheduler -ClientOnly -Property $Props
+$Trigger.PSTypeNames.Insert(0, "Microsoft.Management.Infrastructure.CimInstance#MSFT_TaskTrigger")
 $Triggers = @($Trigger)
              "#,
                 day_of_week, time, week_of_month

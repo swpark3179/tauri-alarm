@@ -337,7 +337,11 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
 
       <Box sx={{ p: 2, borderTop: '1px solid #ddd', display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <Button onClick={onCancel} variant="outlined">취소</Button>
-        <Button onClick={handleSave} variant="contained" disabled={!title}>저장</Button>
+        <Tooltip title={!title ? '제목을 입력해주세요' : ''}>
+          <span>
+            <Button onClick={handleSave} variant="contained" disabled={!title}>저장</Button>
+          </span>
+        </Tooltip>
       </Box>
     </Box>
   );

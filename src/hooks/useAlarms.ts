@@ -42,8 +42,16 @@ export function useAlarms() {
   const deleteAlarm = async (id: string) => {
     setLoading(true);
     try {
-      await invoke('unregister_task', { id });
-      await invoke('delete_alarm_content', { id });
+      try {
+        await invoke('unregister_task', { id });
+      } catch (e) {
+        console.warn('Failed to unregister task, skipping:', e);
+      }
+      try {
+        await invoke('delete_alarm_content', { id });
+      } catch (e) {
+        console.warn('Failed to delete alarm content, skipping:', e);
+      }
       const newAlarms = alarms.filter((a) => a.id !== id);
       await saveAlarms(newAlarms);
     } catch (err) {

@@ -258,7 +258,7 @@ pub async fn unregister_task(id: String) -> Result<(), String> {
 
     if !output.status.success() {
         let err = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Failed to unregister task: {}", err));
+        eprintln!("Warning: failed to unregister task: {}", err);
     }
 
     Ok(())

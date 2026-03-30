@@ -114,7 +114,9 @@ pub async fn delete_alarm_content(id: String) -> Result<(), String> {
     path.push(format!("{}.md", sanitize_id(&id)));
     spawn_blocking(move || {
         if path.exists() {
-            fs::remove_file(path).map_err(|e| e.to_string())?;
+            if let Err(e) = fs::remove_file(&path) {
+                eprintln!("Warning: failed to remove alarm content file {}: {}", path.display(), e);
+            }
         }
         Ok(())
     })

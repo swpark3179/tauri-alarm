@@ -11,7 +11,8 @@ import {
   Paper,
   Divider,
   Fab,
-  Tooltip
+  Tooltip,
+  Button
 } from '@mui/material';
 import {
   ArrowUpward,
@@ -131,14 +132,24 @@ const ListView: React.FC<ListViewProps> = ({
 
       <Box sx={{ flex: 1, overflowY: 'auto', p: 1, bgcolor: 'background.default' }}>
         {alarms.length === 0 && !loading && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary', opacity: 0.8 }}>
-            <NotificationsOff sx={{ fontSize: 64, mb: 2, color: 'text.disabled' }} />
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary', opacity: 0.8 }}
+            role="status"
+            aria-live="polite"
+          >
+            <NotificationsOff sx={{ fontSize: 64, mb: 2, color: 'text.disabled' }} aria-hidden="true" />
             <Typography variant="h6" gutterBottom>
               등록된 알람이 없습니다
             </Typography>
-            <Typography variant="body2" align="center">
-              우측 하단의 + 버튼을 눌러<br/>새 알람을 추가해보세요
-            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Add />}
+              onClick={() => onEdit()}
+              sx={{ mt: 2 }}
+            >
+              새 알람 추가하기
+            </Button>
           </Box>
         )}
 

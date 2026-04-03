@@ -249,6 +249,8 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
 
       <Box sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
         <TextField
+          autoFocus
+          required
           fullWidth
           label="제목"
           value={title}
@@ -277,60 +279,73 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
         {renderTriggers()}
 
         <Box sx={{ mt: 3, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-            <Tab label="편집" />
-            <Tab label="미리보기" />
+          <Tabs value={tab} onChange={(_, v) => setTab(v)} aria-label="마크다운 편집 및 미리보기 탭">
+            <Tab label="편집" id="tab-0" aria-controls="tabpanel-0" />
+            <Tab label="미리보기" id="tab-1" aria-controls="tabpanel-1" />
           </Tabs>
 
-          <Box sx={{ mt: 2, minHeight: 200, display: 'flex', flexDirection: 'column' }}>
-            {tab === 0 ? (
-              <TextField
-                multiline
-                fullWidth
-                minRows={8}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="마크다운을 지원합니다..."
-              />
-            ) : (
-              <Box sx={{
-                p: 2,
+          <Box
+            role="tabpanel"
+            hidden={tab !== 0}
+            id="tabpanel-0"
+            aria-labelledby="tab-0"
+            sx={{ mt: 2, minHeight: 200, display: tab === 0 ? 'flex' : 'none', flexDirection: 'column' }}
+          >
+            <TextField
+              multiline
+              fullWidth
+              minRows={8}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="마크다운을 지원합니다..."
+            />
+          </Box>
+          <Box
+            role="tabpanel"
+            hidden={tab !== 1}
+            id="tabpanel-1"
+            aria-labelledby="tab-1"
+            sx={{
+              mt: 2,
+              minHeight: 200,
+              display: tab === 1 ? 'flex' : 'none',
+              flexDirection: 'column',
+              p: 2,
+              border: '1px solid #ccc',
+              borderRadius: 1,
+              flex: 1,
+              bgcolor: 'white',
+              overflow: 'auto',
+              '& table': {
+                borderCollapse: 'collapse',
+              },
+              '& th, & td': {
                 border: '1px solid #ccc',
-                borderRadius: 1,
-                flex: 1,
-                bgcolor: 'white',
-                overflow: 'auto',
-                '& table': {
-                  borderCollapse: 'collapse',
-                },
-                '& th, & td': {
-                  border: '1px solid #ccc',
-                  padding: '8px',
+                padding: '8px',
+              }
+            }}
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                code({ node, inline, className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  if (!inline && match && match[1] === 'mermaid') {
+                    return <div className="mermaid">{String(children).replace(/\n$/, '')}</div>;
+                  }
+                  return !inline ? (
+                    <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
+                      <code className={className} {...props}>{children}</code>
+                    </pre>
+                  ) : (
+                    <code style={{ background: '#f5f5f5', padding: '2px 4px', borderRadius: '4px' }} {...props}>{children}</code>
+                  );
                 }
-              }}>
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
-                  components={{
-                    code({ node, inline, className, children, ...props }: any) {
-                      const match = /language-(\w+)/.exec(className || '');
-                      if (!inline && match && match[1] === 'mermaid') {
-                        return <div className="mermaid">{String(children).replace(/\n$/, '')}</div>;
-                      }
-                      return !inline ? (
-                        <pre style={{ background: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
-                          <code className={className} {...props}>{children}</code>
-                        </pre>
-                      ) : (
-                        <code style={{ background: '#f5f5f5', padding: '2px 4px', borderRadius: '4px' }} {...props}>{children}</code>
-                      );
-                    }
-                  }}
-                >
-                  {content}
-                </ReactMarkdown>
-              </Box>
-            )}
+              }}
+            >
+              {content}
+            </ReactMarkdown>
           </Box>
         </Box>
       </Box>

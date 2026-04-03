@@ -9,3 +9,7 @@
 ## 2024-05-15 - Empty State Call to Actions
 **Learning:** Empty states that only contain descriptive text or point to other UI elements (like "Click the + button at the bottom right") can be confusing and require more cognitive load. Screen readers also might not properly associate the empty state with the required action.
 **Action:** Always include a direct Call-To-Action (CTA) button within the empty state container itself. Additionally, add `role="status"` and `aria-live="polite"` to the empty state container to ensure screen readers announce it when a list becomes empty (e.g., when all alarms are deleted).
+
+## 2025-03-09 - Accessible Material-UI Tabs and Autofocus in Modals
+**Learning:** When using MUI `<Tabs>` for dynamic views like edit/preview in a modal dialog, simply switching content isn't accessible to screen readers. MUI's `Tabs` provides the `tablist` and `tab` roles, but `aria-label` must be provided manually, and the content wrappers strictly need `role="tabpanel"`, `id`, and `aria-labelledby` corresponding to the tabs. Additionally, setting `autoFocus` and `required` on the primary `TextField` when the modal/view opens provides an immediate, helpful UX lift, ensuring users know exactly what is required and can start typing instantly.
+**Action:** Always ensure that any custom tab implementations include full ARIA linkage (`tab` to `tabpanel` via IDs) and apply `autoFocus` to the first logical required input when rendering data entry forms.

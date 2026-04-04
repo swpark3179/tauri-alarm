@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   List,
   ListItem,
@@ -12,7 +12,12 @@ import {
   Divider,
   Fab,
   Tooltip,
-  Button
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   ArrowUpward,
@@ -42,6 +47,19 @@ const ListView: React.FC<ListViewProps> = ({
   onToggle,
   onReorder,
 }) => {
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirmId) {
+      onDelete(deleteConfirmId);
+      setDeleteConfirmId(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmId(null);
+  };
+
   const oneTimeAlarms = alarms.filter((a) => a.repeat_type === 'None');
   const periodicAlarms = alarms.filter((a) => a.repeat_type !== 'None');
 
@@ -76,7 +94,7 @@ const ListView: React.FC<ListViewProps> = ({
                     </Tooltip>
                     <Tooltip title="알람 삭제">
                       <span>
-                        <IconButton onClick={() => onDelete(alarm.id)} disabled={loading} color="error" aria-label="알람 삭제">
+                        <IconButton onClick={() => setDeleteConfirmId(alarm.id)} disabled={loading} color="error" aria-label="알람 삭제">
                           <Delete fontSize="small" />
                         </IconButton>
                       </span>
@@ -175,6 +193,30 @@ const ListView: React.FC<ListViewProps> = ({
           </Fab>
         </span>
       </Tooltip>
+
+      <Dialog
+        open={deleteConfirmId !== null}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          알람을 삭제하시겠습니까?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            이 작업은 되돌릴 수 없으며, 설정된 알람 및 내용이 모두 영구적으로 삭제됩니다.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} autoFocus color="primary">
+            취소
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="error">
+            삭제
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

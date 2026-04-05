@@ -58,6 +58,8 @@ pub async fn register_task(alarm: Alarm) -> Result<(), String> {
             if alarm.triggers.is_empty() {
                 return Err("No triggers provided for one-time alarm".into());
             }
+            // Each trigger is approximately 60 characters
+            triggers_ps = String::with_capacity(13 + alarm.triggers.len() * 60);
             triggers_ps.push_str("$Triggers = @(");
             for (i, t) in alarm.triggers.iter().enumerate() {
                 let date = t.date.as_ref().ok_or("Missing date")?;

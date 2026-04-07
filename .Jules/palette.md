@@ -13,3 +13,7 @@
 ## 2025-03-09 - Accessible Material-UI Tabs and Autofocus in Modals
 **Learning:** When using MUI `<Tabs>` for dynamic views like edit/preview in a modal dialog, simply switching content isn't accessible to screen readers. MUI's `Tabs` provides the `tablist` and `tab` roles, but `aria-label` must be provided manually, and the content wrappers strictly need `role="tabpanel"`, `id`, and `aria-labelledby` corresponding to the tabs. Additionally, setting `autoFocus` and `required` on the primary `TextField` when the modal/view opens provides an immediate, helpful UX lift, ensuring users know exactly what is required and can start typing instantly.
 **Action:** Always ensure that any custom tab implementations include full ARIA linkage (`tab` to `tabpanel` via IDs) and apply `autoFocus` to the first logical required input when rendering data entry forms.
+
+## 2025-05-19 - Top-level Exit Actions & Esc Shortcut for Forms
+**Learning:** Found that long forms (especially those with Markdown previews) can act as scrolling traps. If the only way to cancel/exit is at the bottom of the page, users feel trapped or get frustrated having to scroll all the way down.
+**Action:** Always provide a top-level exit action (like a back button or an `X` in the header) and support the `Escape` key to quickly cancel/close full-page forms or modals. Ensure these icon buttons have descriptive Korean `aria-label`s.

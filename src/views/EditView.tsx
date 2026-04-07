@@ -14,7 +14,7 @@ import {
   Tooltip,
   Grid,
 } from '@mui/material';
-import { Add, Delete } from '@mui/icons-material';
+import { Add, Delete, ArrowBack } from '@mui/icons-material';
 import { Alarm, RepeatType, TriggerInfo } from '../types';
 import { invoke } from '@tauri-apps/api/core';
 import { v4 as uuidv4 } from 'uuid';
@@ -69,6 +69,18 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
   );
   const [content, setContent] = useState('');
   const [tab, setTab] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onCancel]);
 
   useEffect(() => {
     mermaid.initialize({ startOnLoad: true, theme: 'default' });
@@ -243,7 +255,14 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
-      <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
+      <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center' }}>
+        <IconButton
+          onClick={onCancel}
+          sx={{ color: 'white', mr: 1 }}
+          aria-label="뒤로 가기"
+        >
+          <ArrowBack />
+        </IconButton>
         <Typography variant="h6">{alarm ? '알람 편집' : '새 알람'}</Typography>
       </Box>
 

@@ -21,3 +21,11 @@
 ## 2025-06-11 - MUI Select Label Association and Persistent Text Field Labels
 **Learning:** Found that Material-UI `<Select>` components were not correctly associated with their `<InputLabel>`s because they lacked `labelId` and `id` linkage. Screen readers need this explicit linkage to announce the select's purpose. Furthermore, using only `placeholder` on a multiline `<TextField>` provides poor UX and accessibility because the visual hint disappears when the user starts typing, and the field lacks an accessible name.
 **Action:** Always provide explicitly linked `id` on `<InputLabel>` and `labelId` on `<Select>` components. Always use a `label` prop on `<TextField>` (even if there is a placeholder) to maintain context during typing and ensure the field is accessible to assistive technologies.
+
+## 2025-06-25 - Contextual Disabled Tooltips
+**Learning:** Wrapping a disabled button in a `<span>` to show a Tooltip is good for accessibility, but simply showing the default action text (like "Delete") isn't fully helpful. Users need to know *why* the button is disabled.
+**Action:** When creating a Tooltip for a disabled button, dynamically switch the text to explain the disabled state (e.g., `title={isDisabled ? "At least 1 item required" : "Delete item"}`).
+
+## 2025-06-25 - Discoverability of Keyboard Shortcuts
+**Learning:** Keyboard shortcuts (like Escape to close) exist in code but users might not know they exist if the UI doesn't hint at them.
+**Action:** When a button action is tied to a keyboard shortcut, append the shortcut to its ARIA label or Tooltip (e.g., "Go back (Esc)") to improve discoverability.

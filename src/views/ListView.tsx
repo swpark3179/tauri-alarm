@@ -105,7 +105,7 @@ const ListView: React.FC<ListViewProps> = ({
                 }
               >
                 <Box sx={{ display: 'flex', flexDirection: 'column', mr: 1 }}>
-                  <Tooltip title="순서 위로 이동">
+                  <Tooltip title={index === 0 ? "첫 번째 항목입니다" : "순서 위로 이동"}>
                     <span>
                       <IconButton
                         size="small"
@@ -117,7 +117,7 @@ const ListView: React.FC<ListViewProps> = ({
                       </IconButton>
                     </span>
                   </Tooltip>
-                  <Tooltip title="순서 아래로 이동">
+                  <Tooltip title={index === alarmList.length - 1 ? "마지막 항목입니다" : "순서 아래로 이동"}>
                     <span>
                       <IconButton
                         size="small"
@@ -147,7 +147,7 @@ const ListView: React.FC<ListViewProps> = ({
     <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'primary.main', color: 'white' }}>
         <Typography variant="h6">알람 목록</Typography>
-        {loading && <CircularProgress size={24} color="inherit" />}
+        {loading && <CircularProgress size={24} color="inherit" aria-label="알람 목록 로딩 중" />}
       </Box>
 
       <Box sx={{ flex: 1, overflowY: 'auto', p: 1, bgcolor: 'background.default' }}>

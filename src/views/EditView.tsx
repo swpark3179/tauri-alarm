@@ -136,7 +136,7 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
                 />
               </Grid>
               <Grid size={2}>
-                <Tooltip title="날짜/시간 삭제">
+                <Tooltip title={triggers.length === 1 ? "최소 1개의 설정이 필요합니다" : "날짜/시간 삭제"}>
                   <span>
                     <IconButton onClick={() => handleRemoveTrigger(i)} disabled={triggers.length === 1} color="error" aria-label="날짜/시간 삭제">
                       <Delete />
@@ -259,13 +259,17 @@ const EditView: React.FC<EditViewProps> = ({ alarm, onSave, onCancel }) => {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
       <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center' }}>
-        <IconButton
-          onClick={onCancel}
-          sx={{ color: 'white', mr: 1 }}
-          aria-label="뒤로 가기"
-        >
-          <ArrowBack />
-        </IconButton>
+        <Tooltip title="뒤로 가기 (Esc)">
+          <span>
+            <IconButton
+              onClick={onCancel}
+              sx={{ color: 'white', mr: 1 }}
+              aria-label="뒤로 가기"
+            >
+              <ArrowBack />
+            </IconButton>
+          </span>
+        </Tooltip>
         <Typography variant="h6">{alarm ? '알람 편집' : '새 알람'}</Typography>
       </Box>
 
